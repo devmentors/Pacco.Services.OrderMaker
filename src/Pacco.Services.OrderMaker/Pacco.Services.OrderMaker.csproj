@@ -20,12 +20,8 @@
     <PackageReference Include="Convey.MessageBrokers.CQRS" Version="0.0.*" />
     <PackageReference Include="Convey.MessageBrokers.RabbitMQ" Version="0.0.*" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
-  </ItemGroup>
+    <PackageReference Include="Convey.HTTP" Version="0.0.*" />
 
-  <ItemGroup>
-    <Reference Include="Convey.HTTP, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\..\..\.nuget\packages\convey.http\0.0.6\lib\netstandard2.0\Convey.HTTP.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

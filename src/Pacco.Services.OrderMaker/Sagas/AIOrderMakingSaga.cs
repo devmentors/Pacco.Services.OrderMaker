@@ -34,7 +34,7 @@ namespace Pacco.Services.OrderMaker.Sagas
         private readonly ICorrelationContextAccessor _accessor;
         private readonly IAvailabilityServiceClient _client;
 
-        private const string VehicleId = "83795d43-5a53-4ac8-80e5-fbc7c5e830d5";
+        private const string VehicleId = "7546b838-d2c9-49e4-be04-da6d9ec889a5";
 
         public AIOrderMakingSaga(IBusPublisher publisher, ICorrelationContextAccessor accessor, IAvailabilityServiceClient client)
         {
@@ -59,7 +59,7 @@ namespace Pacco.Services.OrderMaker.Sagas
 
         public async Task HandleAsync(MakeOrder message, ISagaContext context)
         {
-            Data.ParcelIds = message.ParcelIds.ToList();
+            Data.ParcelIds.Add(message.ParcelId);
             Data.OrderId = message.OrderId;
             Data.CustomerId = message.CustomerId;
             await _publisher.SendAsync(new CreateOrder(Data.OrderId, message.CustomerId), _accessor.CorrelationContext);
@@ -83,8 +83,9 @@ namespace Pacco.Services.OrderMaker.Sagas
                 Data.VehicleId = true? new Guid(VehicleId) : Guid.Empty; // typical AI in startups
 
                 var resource = await _client.GetResourceReservationsAsync(Data.VehicleId);
-                var latestReservation = resource.Reservations.OrderBy(r => r.DateTime).Last();
-
+                var latestReservation = resource.Reservations.Any() 
+                    ? resource.Reservations.OrderBy(r => r.DateTime).Last() : null;
+                
                 Data.ReservationDate = latestReservation?.DateTime.AddDays(1) ?? DateTime.UtcNow.AddDays(5);
 
                 await _publisher.SendAsync(new AssignVehicleToOrder(Data.OrderId, Data.VehicleId, Data.ReservationDate
@@ -106,7 +107,8 @@ namespace Pacco.Services.OrderMaker.Sagas
             => Task.CompletedTask;
 
         public Task CompensateAsync(ParcelAddedToOrder message, ISagaContext context)
-            => Task.CompletedTask;
+            => _publisher.SendAsync(new CancelOrder(message.OrderId, "Because I'm saga"), 
+                _accessor.CorrelationContext);
 
         public Task CompensateAsync(VehicleAssignedToOrder message, ISagaContext context)
             => Task.CompletedTask;
