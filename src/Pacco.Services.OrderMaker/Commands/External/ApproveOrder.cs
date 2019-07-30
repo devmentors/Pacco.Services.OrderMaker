@@ -7,11 +7,11 @@ namespace Pacco.Services.OrderMaker.Commands.External
     [MessageNamespace("orders")]
     public class ApproveOrder : ICommand
     {
-        public Guid Id { get; }
+        public Guid OrderId { get; }
 
-        public ApproveOrder(Guid id)
+        public ApproveOrder(Guid orderId)
         {
-            Id = id;
+            OrderId = orderId;
         }
     }
 }

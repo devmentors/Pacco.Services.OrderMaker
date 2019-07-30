@@ -48,10 +48,10 @@ namespace Pacco.Services.OrderMaker.Sagas
             switch (message)
             {
                 case MakeOrder m: return m.OrderId.ToString();
-                case OrderCreated m: return m.Id.ToString();
+                case OrderCreated m: return m.OrderId.ToString();
                 case ParcelAddedToOrder m: return m.OrderId.ToString();
                 case VehicleAssignedToOrder m: return m.OrderId.ToString();
-                case OrderApproved m: return m.Id.ToString();
+                case OrderApproved m: return m.OrderId.ToString();
             }
 
             return base.ResolveId(message, context);

@@ -7,11 +7,11 @@ namespace Pacco.Services.OrderMaker.Events.External
     [MessageNamespace("orders")]
     public class OrderApproved : IEvent
     {
-        public Guid Id { get; }
+        public Guid OrderId { get; }
 
-        public OrderApproved(Guid id)
+        public OrderApproved(Guid orderId)
         {
-            Id = id;
+            OrderId = orderId;
         }
     }
 }

@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Convey;
-using Convey.Logging;
-using Convey.MessageBrokers.RabbitMQ;
 using Convey.WebApi;
 using Convey.WebApi.CQRS;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Pacco.Services.OrderMaker.Commands;
 
 namespace Pacco.Services.OrderMaker
@@ -30,7 +22,7 @@ namespace Pacco.Services.OrderMaker
                     .UseApp()
                     .UseDispatcherEndpoints(endpoints => endpoints
                         .Get("", ctx => ctx.Response.WriteAsync("Welcome to Pacco uber AI order maker Service!"))
-                        .Post<MakeOrder>("orders/{id}/make")))
+                        .Post<MakeOrder>("orders/{orderId}/make")))
                 .Build()
                 .RunAsync();
     }

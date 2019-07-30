@@ -7,12 +7,12 @@ namespace Pacco.Services.OrderMaker.Commands.External
     [MessageNamespace("orders")]
     public class CancelOrder : ICommand
     {
-        public Guid Id { get; }
+        public Guid OrderId { get; }
         public string Reason { get; }
 
-        public CancelOrder(Guid id, string reason)
+        public CancelOrder(Guid orderId, string reason)
         {
-            Id = id;
+            OrderId = orderId;
             Reason = reason;
         }
     }

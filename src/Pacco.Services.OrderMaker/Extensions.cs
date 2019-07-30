@@ -22,7 +22,7 @@ namespace Pacco.Services.OrderMaker
                 .AddEventHandlers()
                 .AddInMemoryCommandDispatcher()
                 .AddInMemoryEventDispatcher()
-                .AddRabbitMq();
+                .AddRabbitMq<CorrelationContext>();
 
             builder.Services.AddChronicle();
             builder.Services.AddTransient<IAvailabilityServiceClient, AvailabilityServiceClient>();
