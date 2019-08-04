@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Chronicle;
 using Convey.MessageBrokers;
 using Convey.MessageBrokers.CQRS;
+using Microsoft.Extensions.Logging;
 using Pacco.Services.OrderMaker.Commands;
 using Pacco.Services.OrderMaker.Commands.External;
 using Pacco.Services.OrderMaker.Events.External;
@@ -33,14 +34,17 @@ namespace Pacco.Services.OrderMaker.Sagas
         private readonly IBusPublisher _publisher;
         private readonly ICorrelationContextAccessor _accessor;
         private readonly IAvailabilityServiceClient _client;
+        private readonly ILogger<AIOrderMakingSaga> _logger;
 
         private const string VehicleId = "7546b838-d2c9-49e4-be04-da6d9ec889a5";
 
-        public AIOrderMakingSaga(IBusPublisher publisher, ICorrelationContextAccessor accessor, IAvailabilityServiceClient client)
+        public AIOrderMakingSaga(IBusPublisher publisher, ICorrelationContextAccessor accessor,
+            IAvailabilityServiceClient client, ILogger<AIOrderMakingSaga> logger)
         {
             _publisher = publisher;
             _accessor = accessor;
             _client = client;
+            _logger = logger;
         }
 
         public override SagaId ResolveId(object message, ISagaContext context)
@@ -59,6 +63,8 @@ namespace Pacco.Services.OrderMaker.Sagas
 
         public async Task HandleAsync(MakeOrder message, ISagaContext context)
         {
+            _logger.LogInformation($"Started a saga for order: {message.OrderId}, customer: {message.CustomerId}," +
+                                   $"parcels: {message.ParcelId}");
             Data.ParcelIds.Add(message.ParcelId);
             Data.OrderId = message.OrderId;
             Data.CustomerId = message.CustomerId;
@@ -88,8 +94,8 @@ namespace Pacco.Services.OrderMaker.Sagas
                 
                 Data.ReservationDate = latestReservation?.DateTime.AddDays(1) ?? DateTime.UtcNow.AddDays(5);
 
-                await _publisher.SendAsync(new AssignVehicleToOrder(Data.OrderId, Data.VehicleId, Data.ReservationDate
-                    , Data.CustomerId), _accessor.CorrelationContext);
+                await _publisher.SendAsync(new AssignVehicleToOrder(Data.OrderId, Data.VehicleId, Data.ReservationDate),
+                    _accessor.CorrelationContext);
             }
         }
 
@@ -98,7 +104,12 @@ namespace Pacco.Services.OrderMaker.Sagas
                 _accessor.CorrelationContext);
 
         public Task HandleAsync(OrderApproved message, ISagaContext context)
-            => CompleteAsync();
+        {
+            _logger.LogInformation($"Completed a saga for order: {Data.OrderId}, customer: {Data.CustomerId}," +
+                                   $"parcels: {string.Join(", ", Data.ParcelIds)}");
+
+            return CompleteAsync();
+        }
 
         public Task CompensateAsync(MakeOrder message, ISagaContext context)
             => Task.CompletedTask;
