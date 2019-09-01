@@ -7,15 +7,17 @@ namespace Pacco.Services.OrderMaker.Commands.External
     [MessageNamespace("availability")]
     public class ReserveResource : ICommand
     {
-        public Guid OrderId { get; }
+        public Guid ResourceId { get; }
+        public Guid CustomerId { get; }
         public DateTime DateTime { get; }
         public int Priority { get; }
 
-        public ReserveResource(Guid orderId, DateTime dateTime, int priority)
+        public ReserveResource(Guid resourceIdd, DateTime dateTime, int priority, Guid customerId)
         {
-            OrderId = orderId;
+            ResourceId = resourceIdd;
             DateTime = dateTime;
             Priority = priority;
+            CustomerId = customerId;
         }
     }
 }

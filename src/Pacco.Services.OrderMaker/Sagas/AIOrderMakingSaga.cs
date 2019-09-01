@@ -36,7 +36,7 @@ namespace Pacco.Services.OrderMaker.Sagas
         private readonly IAvailabilityServiceClient _client;
         private readonly ILogger<AIOrderMakingSaga> _logger;
 
-        private const string VehicleId = "7546b838-d2c9-49e4-be04-da6d9ec889a5";
+        private const string VehicleId = "d718feb1-2bc1-4a9a-8b3c-6048d89bc1ad";
 
         public AIOrderMakingSaga(IBusPublisher publisher, ICorrelationContextAccessor accessor,
             IAvailabilityServiceClient client, ILogger<AIOrderMakingSaga> logger)
@@ -45,6 +45,10 @@ namespace Pacco.Services.OrderMaker.Sagas
             _accessor = accessor;
             _client = client;
             _logger = logger;
+            _accessor.CorrelationContext = new CorrelationContext
+            {
+                User = new CorrelationContext.UserContext()
+            };
         }
 
         public override SagaId ResolveId(object message, ISagaContext context)
@@ -100,7 +104,7 @@ namespace Pacco.Services.OrderMaker.Sagas
         }
 
         public Task HandleAsync(VehicleAssignedToOrder message, ISagaContext context)
-            => _publisher.SendAsync(new ReserveResource(Data.VehicleId, Data.ReservationDate, 9999),
+            => _publisher.SendAsync(new ReserveResource(Data.VehicleId, Data.ReservationDate, 9999, Data.CustomerId),
                 _accessor.CorrelationContext);
 
         public Task HandleAsync(OrderApproved message, ISagaContext context)
