@@ -12,7 +12,8 @@ namespace Pacco.Services.OrderMaker.Handlers
         IEventHandler<OrderApproved>, 
         IEventHandler<OrderCreated>, 
         IEventHandler<ParcelAddedToOrder>,
-        IEventHandler<VehicleAssignedToOrder>
+        IEventHandler<VehicleAssignedToOrder>,
+        IEventHandler<ResourceReserved>
     {
         private readonly ISagaCoordinator _coordinator;
 
@@ -36,6 +37,7 @@ namespace Pacco.Services.OrderMaker.Handlers
         public Task HandleAsync(VehicleAssignedToOrder @event)
             => _coordinator.ProcessAsync(@event, SagaContext.Empty);
 
-
+        public Task HandleAsync(ResourceReserved @event)
+            => _coordinator.ProcessAsync(@event, SagaContext.Empty);
     }
 }
