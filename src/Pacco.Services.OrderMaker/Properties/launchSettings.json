@@ -14,7 +14,7 @@
         "ASPNETCORE_ENVIRONMENT": "local"
       }
     },
-    "Pacco.Services.Orders": {
+    "Pacco.Services.OrderMaker": {
       "commandName": "Project",
       "launchBrowser": true,
       "applicationUrl": "http://localhost:5015",
