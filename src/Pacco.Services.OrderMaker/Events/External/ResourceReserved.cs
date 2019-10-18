@@ -4,7 +4,7 @@ using Convey.MessageBrokers;
 
 namespace Pacco.Services.OrderMaker.Events.External
 {
-    [MessageNamespace("availability")]
+    [Message("availability")]
     public class ResourceReserved : IEvent
     {
         public Guid ResourceId { get; }

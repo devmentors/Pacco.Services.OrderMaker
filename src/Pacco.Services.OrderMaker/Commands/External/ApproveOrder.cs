@@ -4,7 +4,7 @@ using Convey.MessageBrokers;
 
 namespace Pacco.Services.OrderMaker.Commands.External
 {
-    [MessageNamespace("orders")]
+    [Message("orders")]
     public class ApproveOrder : ICommand
     {
         public Guid OrderId { get; }

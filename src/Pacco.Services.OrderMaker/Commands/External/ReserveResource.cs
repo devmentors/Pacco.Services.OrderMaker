@@ -4,7 +4,7 @@ using Convey.MessageBrokers;
 
 namespace Pacco.Services.OrderMaker.Commands.External
 {
-    [MessageNamespace("availability")]
+    [Message("availability")]
     public class ReserveResource : ICommand
     {
         public Guid ResourceId { get; }
