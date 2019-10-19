@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Chronicle_" Version="2.0.2" />
+    <PackageReference Include="Chronicle_" Version="2.1.0" />
     <PackageReference Include="Convey" Version="0.3.*" />
     <PackageReference Include="Convey.CQRS.Commands" Version="0.3.*" />
     <PackageReference Include="Convey.CQRS.Events" Version="0.3.*" />
@@ -22,7 +22,6 @@
     <PackageReference Include="Convey.WebApi" Version="0.3.*" />
     <PackageReference Include="Convey.WebApi.CQRS" Version="0.3.*" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0" />
-
   </ItemGroup>
 
 </Project>
