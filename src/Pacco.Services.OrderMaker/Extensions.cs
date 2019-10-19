@@ -10,6 +10,7 @@ using Convey.MessageBrokers.RabbitMQ;
 using Convey.Metrics.AppMetrics;
 using Convey.WebApi;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Pacco.Services.OrderMaker.Events.External;
 using Pacco.Services.OrderMaker.Services.Clients;
@@ -20,6 +21,7 @@ namespace Pacco.Services.OrderMaker
     {
         public static IConveyBuilder AddApp(this IConveyBuilder builder)
         {
+            builder.Services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
             builder
                 .AddHttpClient()
                 .AddConsul()
