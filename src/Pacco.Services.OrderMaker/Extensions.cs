@@ -8,6 +8,7 @@ using Convey.LoadBalancing.Fabio;
 using Convey.MessageBrokers.CQRS;
 using Convey.MessageBrokers.RabbitMQ;
 using Convey.Metrics.AppMetrics;
+using Convey.Persistence.Redis;
 using Convey.WebApi;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -28,6 +29,7 @@ namespace Pacco.Services.OrderMaker
                 .AddEventHandlers()
                 .AddInMemoryCommandDispatcher()
                 .AddInMemoryEventDispatcher()
+                .AddRedis()
                 .AddMetrics()
                 .AddRabbitMq();
 

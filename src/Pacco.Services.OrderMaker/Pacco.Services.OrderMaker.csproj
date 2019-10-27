@@ -20,6 +20,7 @@
     <PackageReference Include="Convey.MessageBrokers.Outbox" Version="0.3.*" />
     <PackageReference Include="Convey.MessageBrokers.RabbitMQ" Version="0.3.*" />
     <PackageReference Include="Convey.Metrics.AppMetrics" Version="0.3.*" />
+    <PackageReference Include="Convey.Persistence.Redis" Version="0.3.*" />
     <PackageReference Include="Convey.WebApi" Version="0.3.*" />
     <PackageReference Include="Convey.WebApi.CQRS" Version="0.3.*" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0" />
