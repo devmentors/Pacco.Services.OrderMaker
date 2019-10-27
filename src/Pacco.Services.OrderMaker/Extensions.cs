@@ -21,9 +21,7 @@ namespace Pacco.Services.OrderMaker
     {
         public static IConveyBuilder AddApp(this IConveyBuilder builder)
         {
-            builder.Services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
-            builder
-                .AddHttpClient()
+            builder.AddHttpClient()
                 .AddConsul()
                 .AddFabio()
                 .AddCommandHandlers()
@@ -41,9 +39,8 @@ namespace Pacco.Services.OrderMaker
 
         public static IApplicationBuilder UseApp(this IApplicationBuilder app)
         {
-            app
-                .UseErrorHandler()
-                .UseConsul()
+            app.UseErrorHandler()
+                .UseInitializers()
                 .UseMetrics()
                 .UseRabbitMq()
                 .SubscribeEvent<OrderApproved>()
