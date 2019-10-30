@@ -35,6 +35,7 @@ namespace Pacco.Services.OrderMaker
 
             builder.Services.AddChronicle();
             builder.Services.AddTransient<IAvailabilityServiceClient, AvailabilityServiceClient>();
+            builder.Services.AddTransient<IVehiclesServiceClient, VehiclesServiceClient>();
 
             return builder;
         }

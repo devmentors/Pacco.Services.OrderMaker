@@ -11,7 +11,7 @@ namespace Pacco.Services.OrderMaker.Commands
 
         public MakeOrder(Guid orderId, Guid customerId, Guid parcelId)
         {
-            OrderId = orderId;
+            OrderId = orderId == Guid.Empty ? Guid.NewGuid() : orderId;
             CustomerId = customerId;
             ParcelId = parcelId;
         }

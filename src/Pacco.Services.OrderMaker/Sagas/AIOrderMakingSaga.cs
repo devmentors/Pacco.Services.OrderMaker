@@ -34,16 +34,17 @@ namespace Pacco.Services.OrderMaker.Sagas
         private readonly IBusPublisher _publisher;
         private readonly ICorrelationContextAccessor _accessor;
         private readonly IAvailabilityServiceClient _client;
+        private readonly IVehiclesServiceClient _vehiclesServiceClient;
         private readonly ILogger<AIOrderMakingSaga> _logger;
 
-        private const string VehicleId = "d718feb1-2bc1-4a9a-8b3c-6048d89bc1ad";
-
         public AIOrderMakingSaga(IBusPublisher publisher, ICorrelationContextAccessor accessor,
-            IAvailabilityServiceClient client, ILogger<AIOrderMakingSaga> logger)
+            IAvailabilityServiceClient client, IVehiclesServiceClient vehiclesServiceClient,
+            ILogger<AIOrderMakingSaga> logger)
         {
             _publisher = publisher;
             _accessor = accessor;
             _client = client;
+            _vehiclesServiceClient = vehiclesServiceClient;
             _logger = logger;
             _accessor.CorrelationContext = new CorrelationContext
             {
@@ -90,12 +91,23 @@ namespace Pacco.Services.OrderMaker.Sagas
 
             if (Data.AllPackagesAddedToOrder)
             {
-                Data.VehicleId = true? new Guid(VehicleId) : Guid.Empty; // typical AI in startups
+                _logger.LogInformation("Searching for a vehicle...");
+                var vehicles = await _vehiclesServiceClient.FindAsync();
+                var vehicle = vehicles.FirstOrDefault(); // typical AI in startups
+                if (vehicle is null)
+                {
+                    _logger.LogError("Vehicle was not found.");
+                    await RejectAsync();
+                    return;
+                }
 
+                _logger.LogInformation($"Found a vehicle: {vehicle.Brand}, {vehicle.Model} [id: {vehicle.Id}]");
+                Data.VehicleId = vehicle.Id;
                 var resource = await _client.GetResourceReservationsAsync(Data.VehicleId);
-                var latestReservation = resource.Reservations.Any() 
-                    ? resource.Reservations.OrderBy(r => r.DateTime).Last() : null;
-                
+                var latestReservation = resource.Reservations.Any()
+                    ? resource.Reservations.OrderBy(r => r.DateTime).Last()
+                    : null;
+
                 Data.ReservationDate = latestReservation?.DateTime.AddDays(1) ?? DateTime.UtcNow.AddDays(5);
 
                 await _publisher.SendAsync(new AssignVehicleToOrder(Data.OrderId, Data.VehicleId, Data.ReservationDate),

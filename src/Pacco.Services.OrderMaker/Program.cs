@@ -23,11 +23,9 @@ namespace Pacco.Services.OrderMaker
                     .UseApp()
                     .UseDispatcherEndpoints(endpoints => endpoints
                         .Get("", ctx => ctx.Response.WriteAsync("Welcome to Pacco uber AI order maker Service!"))
-                        .Post<MakeOrder>("orders/{orderId}/make")))
+                        .Post<MakeOrder>("orders")))
                 .UseLogging()
                 .Build()
                 .RunAsync();
-    }
-    
-    
+    }   
 }
