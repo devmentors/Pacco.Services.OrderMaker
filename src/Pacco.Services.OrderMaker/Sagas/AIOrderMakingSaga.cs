@@ -93,7 +93,7 @@ namespace Pacco.Services.OrderMaker.Sagas
             {
                 _logger.LogInformation("Searching for a vehicle...");
                 var vehicles = await _vehiclesServiceClient.FindAsync();
-                var vehicle = vehicles.FirstOrDefault(); // typical AI in startups
+                var vehicle = vehicles.Items.FirstOrDefault(); // typical AI in startups
                 if (vehicle is null)
                 {
                     _logger.LogError("Vehicle was not found.");
@@ -101,7 +101,7 @@ namespace Pacco.Services.OrderMaker.Sagas
                     return;
                 }
 
-                _logger.LogInformation($"Found a vehicle: {vehicle.Brand}, {vehicle.Model} [id: {vehicle.Id}]");
+                _logger.LogInformation($"Found a vehicle: {vehicle.Brand}, {vehicle.Model} for {vehicle.PricePerService}$ [id: {vehicle.Id}]");
                 Data.VehicleId = vehicle.Id;
                 var resource = await _client.GetResourceReservationsAsync(Data.VehicleId);
                 var latestReservation = resource.Reservations.Any()

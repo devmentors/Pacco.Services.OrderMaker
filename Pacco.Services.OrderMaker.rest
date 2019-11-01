@@ -1,0 +1,12 @@
+@url = http://localhost:5015
+@parcelId = 0d5efd01-a59e-4137-97db-5801721d800f
+@customerId = 470725cc-ebe3-4598-b377-50fbc442616f
+
+###
+POST {{url}}/orders
+Content-Type: application/json
+
+{
+  "parcelId": "{{parcelId}}",
+  "customerId": "{{customerId}}"
+}

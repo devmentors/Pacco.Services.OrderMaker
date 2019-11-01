@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Convey.CQRS.Queries;
 using Convey.HTTP;
 using Pacco.Services.OrderMaker.DTO;
 
@@ -16,7 +16,7 @@ namespace Pacco.Services.OrderMaker.Services.Clients
             _url = options.Services["vehicles"];
         }
 
-        public Task<IEnumerable<VehicleDto>> FindAsync()
-            => _httpClient.GetAsync<IEnumerable<VehicleDto>>($"{_url}/vehicles");
+        public Task<PagedResult<VehicleDto>> FindAsync()
+            => _httpClient.GetAsync<PagedResult<VehicleDto>>($"{_url}/vehicles");
     }
 }
