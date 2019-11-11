@@ -23,7 +23,7 @@
     <PackageReference Include="Convey.Persistence.Redis" Version="0.3.*" />
     <PackageReference Include="Convey.WebApi" Version="0.3.*" />
     <PackageReference Include="Convey.WebApi.CQRS" Version="0.3.*" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0" />
+    <PackageReference Include="Convey.WebApi.Swagger" Version="0.3.*" />
   </ItemGroup>
 
 </Project>

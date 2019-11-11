@@ -3,6 +3,7 @@ using Convey;
 using Convey.CQRS.Commands;
 using Convey.CQRS.Events;
 using Convey.Discovery.Consul;
+using Convey.Docs.Swagger;
 using Convey.HTTP;
 using Convey.LoadBalancing.Fabio;
 using Convey.MessageBrokers.CQRS;
@@ -10,6 +11,7 @@ using Convey.MessageBrokers.RabbitMQ;
 using Convey.Metrics.AppMetrics;
 using Convey.Persistence.Redis;
 using Convey.WebApi;
+using Convey.WebApi.Swagger;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +22,7 @@ namespace Pacco.Services.OrderMaker
 {
     public static class Extensions
     {
-        public static IConveyBuilder AddApp(this IConveyBuilder builder)
+        public static IConveyBuilder AddInfrastructure(this IConveyBuilder builder)
         {
             builder.AddHttpClient()
                 .AddConsul()
@@ -31,7 +33,8 @@ namespace Pacco.Services.OrderMaker
                 .AddInMemoryEventDispatcher()
                 .AddRedis()
                 .AddMetrics()
-                .AddRabbitMq();
+                .AddRabbitMq()
+                .AddWebApiSwaggerDocs();
 
             builder.Services.AddChronicle();
             builder.Services.AddTransient<IAvailabilityServiceClient, AvailabilityServiceClient>();
@@ -43,6 +46,7 @@ namespace Pacco.Services.OrderMaker
         public static IApplicationBuilder UseApp(this IApplicationBuilder app)
         {
             app.UseErrorHandler()
+                .UseSwaggerDocs()
                 .UseInitializers()
                 .UseMetrics()
                 .UseRabbitMq()

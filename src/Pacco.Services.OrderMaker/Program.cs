@@ -17,7 +17,7 @@ namespace Pacco.Services.OrderMaker
                 .ConfigureServices(services => services
                     .AddConvey()
                     .AddWebApi()
-                    .AddApp()
+                    .AddInfrastructure()
                     .Build())
                 .Configure(app => app
                     .UseApp()
