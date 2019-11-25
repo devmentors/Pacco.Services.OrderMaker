@@ -13,7 +13,6 @@ using Convey.Persistence.Redis;
 using Convey.WebApi;
 using Convey.WebApi.Swagger;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Pacco.Services.OrderMaker.Events.External;
 using Pacco.Services.OrderMaker.Services.Clients;
@@ -47,7 +46,7 @@ namespace Pacco.Services.OrderMaker
         {
             app.UseErrorHandler()
                 .UseSwaggerDocs()
-                .UseInitializers()
+                .UseConvey()
                 .UseMetrics()
                 .UseRabbitMq()
                 .SubscribeEvent<OrderApproved>()
