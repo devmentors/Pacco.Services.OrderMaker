@@ -14,17 +14,6 @@ using Pacco.Services.OrderMaker.Services.Clients;
 
 namespace Pacco.Services.OrderMaker.Sagas
 {
-    public class AIMakingOrderData
-    {
-        public Guid OrderId { get; set; }
-        public Guid CustomerId { get; set; }
-        public Guid VehicleId { get; set; }
-        public DateTime ReservationDate { get; set; }
-        public List<Guid> ParcelIds { get; set; } = new List<Guid>();
-        public List<Guid> AddedParcelIds { get; set; } = new List<Guid>();
-        public bool AllPackagesAddedToOrder => AddedParcelIds.All(ParcelIds.Contains);
-    }
-
     public class AIOrderMakingSaga : Saga<AIMakingOrderData>,
         ISagaStartAction<MakeOrder>,
         ISagaAction<OrderCreated>,
@@ -55,18 +44,15 @@ namespace Pacco.Services.OrderMaker.Sagas
         }
 
         public override SagaId ResolveId(object message, ISagaContext context)
-        {
-            switch (message)
+            => message switch
             {
-                case MakeOrder m: return m.OrderId.ToString();
-                case OrderCreated m: return m.OrderId.ToString();
-                case ParcelAddedToOrder m: return m.OrderId.ToString();
-                case VehicleAssignedToOrder m: return m.OrderId.ToString();
-                case OrderApproved m: return m.OrderId.ToString();
-            }
-
-            return base.ResolveId(message, context);
-        }
+                MakeOrder m => (SagaId) m.OrderId.ToString(),
+                OrderCreated m => (SagaId) m.OrderId.ToString(),
+                ParcelAddedToOrder m => (SagaId) m.OrderId.ToString(),
+                VehicleAssignedToOrder m => (SagaId) m.OrderId.ToString(),
+                OrderApproved m => m.OrderId.ToString(),
+                _ => base.ResolveId(message, context)
+            };
 
         public async Task HandleAsync(MakeOrder message, ISagaContext context)
         {
@@ -112,6 +98,7 @@ namespace Pacco.Services.OrderMaker.Sagas
                     const string reason = "Vehicle was not found.";
                     const string code = "vehicle_not_found";
                     _logger.LogError(reason);
+                    
                     await _publisher.PublishAsync(new MakeOrderRejected(Data.OrderId, reason, code),
                         messageContext: _accessor.CorrelationContext,
                         headers: new Dictionary<string, object>
@@ -123,8 +110,9 @@ namespace Pacco.Services.OrderMaker.Sagas
                     return;
                 }
 
-                _logger.LogInformation(
-                    $"Found a vehicle: {vehicle.Brand}, {vehicle.Model} for {vehicle.PricePerService}$ [id: {vehicle.Id}]");
+                _logger.LogInformation($"Found a vehicle: {vehicle.Brand}, {vehicle.Model} for " +
+                                       $"{vehicle.PricePerService}$ [id: {vehicle.Id}]");
+                
                 Data.VehicleId = vehicle.Id;
                 var resource = await _client.GetResourceReservationsAsync(Data.VehicleId);
                 var latestReservation = resource.Reservations.Any()
@@ -185,6 +173,5 @@ namespace Pacco.Services.OrderMaker.Sagas
 
         public Task CompensateAsync(OrderApproved message, ISagaContext context)
             => Task.CompletedTask;
-
     }
 }
