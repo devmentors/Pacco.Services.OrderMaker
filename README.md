@@ -20,4 +20,6 @@ Pacco.Services.OrderMaker is the microservice being part of [Pacco](https://gith
 
 Service can be started locally via `dotnet run` command (executed in the `/src/Pacco.Services.OrderMaker` directory) or by running `./scripts/start.sh` shell script in the root folder of repository.
 
-By default the service will be available under http://localhost:5001.
+By default, the service will be available under http://localhost:5015.
+
+You can also start the service via Docker, either by building a local Dockerfile: `docker build -t pacco.services.ordermaker .` or using the official one `docker pull devmentors/pacco.services.ordermaker`.
