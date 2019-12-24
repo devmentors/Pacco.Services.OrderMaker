@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Convey.CQRS.Queries;
 using Convey.HTTP;
@@ -16,7 +18,16 @@ namespace Pacco.Services.OrderMaker.Services.Clients
             _url = options.Services["vehicles"];
         }
 
-        public Task<PagedResult<VehicleDto>> FindAsync()
-            => _httpClient.GetAsync<PagedResult<VehicleDto>>($"{_url}/vehicles");
+        public async Task<VehicleDto> GetBestAsync()
+        {
+            var vehicles = await _httpClient.GetAsync<PagedResult<VehicleDto>>($"{_url}/vehicles");
+            var bestVehicle = vehicles?.Items?.FirstOrDefault(); // typical AI in a startup
+            if (bestVehicle is null)
+            {
+                throw new InvalidOperationException("The best vehicle was not found.");
+            }
+
+            return bestVehicle;
+        }
     }
 }

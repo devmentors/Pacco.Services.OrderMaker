@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +8,7 @@ using Pacco.Services.OrderMaker.Commands;
 using Pacco.Services.OrderMaker.Commands.External;
 using Pacco.Services.OrderMaker.Events;
 using Pacco.Services.OrderMaker.Events.External;
-using Pacco.Services.OrderMaker.Events.Rejected;
+using Pacco.Services.OrderMaker.Services;
 using Pacco.Services.OrderMaker.Services.Clients;
 
 namespace Pacco.Services.OrderMaker.Sagas
@@ -22,20 +21,20 @@ namespace Pacco.Services.OrderMaker.Sagas
         ISagaAction<OrderApproved>
     {
         private const string SagaHeader = "Saga";
+        private readonly IResourceReservationsService _resourceReservationsService;
+        private readonly IVehiclesServiceClient _vehiclesServiceClient;
         private readonly IBusPublisher _publisher;
         private readonly ICorrelationContextAccessor _accessor;
-        private readonly IAvailabilityServiceClient _client;
-        private readonly IVehiclesServiceClient _vehiclesServiceClient;
         private readonly ILogger<AIOrderMakingSaga> _logger;
 
-        public AIOrderMakingSaga(IBusPublisher publisher, ICorrelationContextAccessor accessor,
-            IAvailabilityServiceClient client, IVehiclesServiceClient vehiclesServiceClient,
-            ILogger<AIOrderMakingSaga> logger)
+        public AIOrderMakingSaga(IResourceReservationsService resourceReservationsService,
+            IVehiclesServiceClient vehiclesServiceClient, IBusPublisher publisher,
+            ICorrelationContextAccessor accessor, ILogger<AIOrderMakingSaga> logger)
         {
+            _resourceReservationsService = resourceReservationsService;
+            _vehiclesServiceClient = vehiclesServiceClient;
             _publisher = publisher;
             _accessor = accessor;
-            _client = client;
-            _vehiclesServiceClient = vehiclesServiceClient;
             _logger = logger;
             _accessor.CorrelationContext = new CorrelationContext
             {
@@ -56,13 +55,11 @@ namespace Pacco.Services.OrderMaker.Sagas
 
         public async Task HandleAsync(MakeOrder message, ISagaContext context)
         {
-            _logger.LogInformation($"Started a saga for order: {message.OrderId}, customer: {message.CustomerId}," +
-                                   $"parcels: {message.ParcelId}");
-            
+            _logger.LogInformation($"Started a saga for order: '{message.OrderId}'.");
             Data.ParcelIds.Add(message.ParcelId);
             Data.OrderId = message.OrderId;
             Data.CustomerId = message.CustomerId;
-            
+
             await _publisher.PublishAsync(new CreateOrder(Data.OrderId, message.CustomerId),
                 messageContext: _accessor.CorrelationContext,
                 headers: new Dictionary<string, object>
@@ -87,52 +84,34 @@ namespace Pacco.Services.OrderMaker.Sagas
         public async Task HandleAsync(ParcelAddedToOrder message, ISagaContext context)
         {
             Data.AddedParcelIds.Add(message.ParcelId);
-
-            if (Data.AllPackagesAddedToOrder)
+            if (!Data.AllPackagesAddedToOrder)
             {
-                _logger.LogInformation("Searching for a vehicle...");
-                var vehicles = await _vehiclesServiceClient.FindAsync();
-                var vehicle = vehicles.Items.FirstOrDefault(); // typical AI in startups
-                if (vehicle is null)
-                {
-                    const string reason = "Vehicle was not found.";
-                    const string code = "vehicle_not_found";
-                    _logger.LogError(reason);
-                    
-                    await _publisher.PublishAsync(new MakeOrderRejected(Data.OrderId, reason, code),
-                        messageContext: _accessor.CorrelationContext,
-                        headers: new Dictionary<string, object>
-                        {
-                            [SagaHeader] = SagaStates.Rejected.ToString()
-                        });
-
-                    await RejectAsync();
-                    return;
-                }
-
-                _logger.LogInformation($"Found a vehicle: {vehicle.Brand}, {vehicle.Model} for " +
-                                       $"{vehicle.PricePerService}$ [id: {vehicle.Id}]");
-                
-                Data.VehicleId = vehicle.Id;
-                var resource = await _client.GetResourceReservationsAsync(Data.VehicleId);
-                var latestReservation = resource.Reservations.Any()
-                    ? resource.Reservations.OrderBy(r => r.DateTime).Last()
-                    : null;
-
-                Data.ReservationDate = latestReservation?.DateTime.AddDays(1) ?? DateTime.UtcNow.AddDays(5);
-
-                await _publisher.PublishAsync(
-                    new AssignVehicleToOrder(Data.OrderId, Data.VehicleId, Data.ReservationDate),
-                    messageContext: _accessor.CorrelationContext,
-                    headers: new Dictionary<string, object>
-                    {
-                        [SagaHeader] = SagaStates.Pending.ToString()
-                    });
+                return;
             }
+
+            _logger.LogInformation("Searching for a vehicle...");
+            var vehicle = await _vehiclesServiceClient.GetBestAsync();
+            Data.VehicleId = vehicle.Id;
+            _logger.LogInformation($"Found a vehicle with id: '{vehicle.Id}' for {vehicle.PricePerService}$.");
+
+            _logger.LogInformation($"Reserving a date for vehicle: '{vehicle.Id}'...");
+            var reservation = await _resourceReservationsService.GetBestAsync(Data.VehicleId);
+            Data.ReservationDate = reservation.DateTime;
+            Data.ReservationPriority = reservation.Priority;
+            _logger.LogInformation($"Reserved a date: {Data.ReservationDate.Date} for vehicle: '{vehicle.Id}'.");
+
+            await _publisher.PublishAsync(
+                new AssignVehicleToOrder(Data.OrderId, Data.VehicleId, Data.ReservationDate),
+                messageContext: _accessor.CorrelationContext,
+                headers: new Dictionary<string, object>
+                {
+                    [SagaHeader] = SagaStates.Pending.ToString()
+                });
         }
 
         public Task HandleAsync(VehicleAssignedToOrder message, ISagaContext context)
-            => _publisher.PublishAsync(new ReserveResource(Data.VehicleId, Data.ReservationDate, 9999, Data.CustomerId),
+            => _publisher.PublishAsync(new ReserveResource(Data.VehicleId, Data.CustomerId,
+                    Data.ReservationDate, Data.ReservationPriority),
                 messageContext: _accessor.CorrelationContext,
                 headers: new Dictionary<string, object>
                 {
@@ -141,9 +120,7 @@ namespace Pacco.Services.OrderMaker.Sagas
 
         public async Task HandleAsync(OrderApproved message, ISagaContext context)
         {
-            _logger.LogInformation($"Completed a saga for order: {Data.OrderId}, customer: {Data.CustomerId}," +
-                                   $"parcels: {string.Join(", ", Data.ParcelIds)}");
-
+            _logger.LogInformation($"Completed a saga for order: '{message.OrderId}'.");
             await _publisher.PublishAsync(new MakeOrderCompleted(message.OrderId),
                 messageContext: _accessor.CorrelationContext,
                 headers: new Dictionary<string, object>

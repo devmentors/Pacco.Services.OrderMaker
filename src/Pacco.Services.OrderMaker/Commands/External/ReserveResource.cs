@@ -12,9 +12,9 @@ namespace Pacco.Services.OrderMaker.Commands.External
         public DateTime DateTime { get; }
         public int Priority { get; }
 
-        public ReserveResource(Guid resourceIdd, DateTime dateTime, int priority, Guid customerId)
+        public ReserveResource(Guid resourceId, Guid customerId, DateTime dateTime, int priority)
         {
-            ResourceId = resourceIdd;
+            ResourceId = resourceId;
             DateTime = dateTime;
             Priority = priority;
             CustomerId = customerId;
