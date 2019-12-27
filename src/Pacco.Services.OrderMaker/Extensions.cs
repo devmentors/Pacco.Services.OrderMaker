@@ -24,7 +24,9 @@ namespace Pacco.Services.OrderMaker
     {
         public static IConveyBuilder AddInfrastructure(this IConveyBuilder builder)
         {
-            builder.AddHttpClient()
+            builder
+                .AddErrorHandler<ExceptionToResponseMapper>()
+                .AddHttpClient()
                 .AddConsul()
                 .AddFabio()
                 .AddCommandHandlers()
