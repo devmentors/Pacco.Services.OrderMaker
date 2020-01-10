@@ -132,27 +132,10 @@ namespace Pacco.Services.OrderMaker.Sagas
         }
 
         public Task HandleAsync(VehicleAssignedToOrder message, ISagaContext context)
-            => _publisher.PublishAsync(new ReserveResource(Data.VehicleId, Data.ReservationDate, 9999, Data.CustomerId),
-                messageContext: _accessor.CorrelationContext,
-                headers: new Dictionary<string, object>
-                {
-                    [SagaHeader] = SagaStates.Pending.ToString()
-                });
+            => Task.CompletedTask;
 
-        public async Task HandleAsync(OrderApproved message, ISagaContext context)
-        {
-            _logger.LogInformation($"Completed a saga for order: {Data.OrderId}, customer: {Data.CustomerId}," +
-                                   $"parcels: {string.Join(", ", Data.ParcelIds)}");
-
-            await _publisher.PublishAsync(new MakeOrderCompleted(message.OrderId),
-                messageContext: _accessor.CorrelationContext,
-                headers: new Dictionary<string, object>
-                {
-                    [SagaHeader] = SagaStates.Completed.ToString()
-                });
-
-            await CompleteAsync();
-        }
+        public Task HandleAsync(OrderApproved message, ISagaContext context)
+            => Task.CompletedTask;
 
         public Task CompensateAsync(MakeOrder message, ISagaContext context)
             => Task.CompletedTask;
