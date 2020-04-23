@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Chronicle_" Version="2.1.0" />
+    <PackageReference Include="Chronicle_" Version="3.2.1" />
     <PackageReference Include="Convey" Version="0.4.*" />
     <PackageReference Include="Convey.CQRS.Commands" Version="0.4.*" />
     <PackageReference Include="Convey.CQRS.Events" Version="0.4.*" />
@@ -24,6 +24,10 @@
     <PackageReference Include="Convey.WebApi" Version="0.4.*" />
     <PackageReference Include="Convey.WebApi.CQRS" Version="0.4.*" />
     <PackageReference Include="Convey.WebApi.Swagger" Version="0.4.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="certs\**" CopyToPublishDirectory="Always" />
   </ItemGroup>
 
 </Project>
